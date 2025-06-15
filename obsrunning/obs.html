@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>OBS Running Text</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: url('nebula.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .text {
+      position: absolute;
+      white-space: nowrap;
+      color: #ffffff;
+      text-shadow: 0 0 10px #00f7ff;
+      font-weight: bold;
+    }
+
+    @keyframes moveText {
+      from { left: 100vw; }
+      to { left: -100%; }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  const channel = new BroadcastChannel("obs-running-text");
+
+  channel.onmessage = (event) => {
+    const text = event.data.text;
+    if (text) startTextLoop(text);
+  };
+
+  function startTextLoop(content) {
+    const startTime = Date.now();
+    const durationLimit = 30 * 60 * 1000; // ⏱️ 30 menit
+
+    function loopRun() {
+      const now = Date.now();
+      if (now - startTime >= durationLimit) return;
+
+      const el = document.createElement("div");
+      el.className = "text";
+      el.innerText = content;
+
+      // Font besar di 1 menit pertama, lalu kecil
+      if (now - startTime < 60000) {
+        el.style.fontSize = "70px";
+      } else {
+        el.style.fontSize = "28px";
+      }
+
+      el.style.top = Math.random() * (window.innerHeight - 50) + "px";
+      const duration = Math.random() * 5 + 5; // 5–10 detik
+      el.style.left = "100vw";
+      el.style.animation = `moveText ${duration}s linear`;
+      document.body.appendChild(el);
+
+      setTimeout(() => el.remove(), duration * 1000);
+      setTimeout(loopRun, duration * 1000);
+    }
+
+    loopRun();
+  }
+</script>
+
+</body>
+</html>
